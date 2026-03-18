@@ -55,22 +55,28 @@ class HealthService {
   String get porcentajeAgua =>
       '${(progresoAgua * 100).toStringAsFixed(0)}% hidratación';
 
-  void actualizarDatos() {
-    pasos += 320;
-    if (aguaMl < metaAguaMl) {
-      aguaMl += 250;
-      if (aguaMl > metaAguaMl) aguaMl = metaAguaMl;
-    }
+void actualizarDatos() {
+  pasos += 320;
+  if (aguaMl < metaAguaMl) {
+    aguaMl += 250;
+    if (aguaMl > metaAguaMl) aguaMl = metaAguaMl;
   }
-  void actualizarPerfil({
-  required int edad,
-  required double peso,
-  required double altura,
-}) {
-  this.edad = edad;
-  this.peso = peso;
-  this.altura = altura;
+
+  final hora = DateTime.now().hour;
+  if (hora >= 0 && hora < pasosPorHora.length) {
+    pasosPorHora[hora] += 320;
+  }
 }
+
+  void actualizarPerfil({
+    required int edad,
+    required double peso,
+    required double altura,
+  }) {
+    this.edad = edad;
+    this.peso = peso;
+    this.altura = altura;
+  }
 
   void agregarAgua(int cantidad) {
     aguaMl += cantidad;
@@ -81,24 +87,25 @@ class HealthService {
     aguaMl -= cantidad;
     if (aguaMl < 0) aguaMl = 0;
   }
-  void agregarAlimento({
-  required int calorias,
-  required int proteinas,
-  required int carbs,
-  required int grasas,
-}) {
-  caloriasConsumidas += calorias;
-  proteinasConsumidas += proteinas;
-  carbsConsumidos += carbs;
-  grasasConsumidas += grasas;
-}
 
-void reiniciarNutricion() {
-  caloriasConsumidas = 0;
-  proteinasConsumidas = 0;
-  carbsConsumidos = 0;
-  grasasConsumidas = 0;
-}
+  void agregarAlimento({
+    required int calorias,
+    required int proteinas,
+    required int carbs,
+    required int grasas,
+  }) {
+    caloriasConsumidas += calorias;
+    proteinasConsumidas += proteinas;
+    carbsConsumidos += carbs;
+    grasasConsumidas += grasas;
+  }
+
+  void reiniciarNutricion() {
+    caloriasConsumidas = 0;
+    proteinasConsumidas = 0;
+    carbsConsumidos = 0;
+    grasasConsumidas = 0;
+  }
 
   String obtenerEstadoIMC() {
     if (imc < 18.5) return 'Bajo peso';
@@ -110,4 +117,37 @@ void reiniciarNutricion() {
   String obtenerSubtituloAgua() {
     return '$aguaMl / $metaAguaMl ml';
   }
+
+  List<int> pasosPorHora = [
+    0,
+    0,
+    0,
+    0,
+    20,
+    0,
+    40,
+    120,
+    280,
+    350,
+    410,
+    300,
+    260,
+    180,
+    90,
+    70,
+    130,
+    220,
+    540,
+    620,
+    430,
+    300,
+    120,
+    80,
+  ];
+
+  double get distanciaKm => pasos * 0.00075;
+
+  int get caloriasPasos => (pasos * 0.04).round();
+
+  int get pisosSubidos => (pasos / 2500).floor();
 }

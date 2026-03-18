@@ -3,6 +3,8 @@ import '../models/metric_item.dart';
 import '../screens/detail_screen.dart';
 import '../services/health_service.dart';
 import '../screens/perfil_detail.dart';
+import '../screens/pasos_detail.dart';
+
 class HealthCard extends StatelessWidget {
   final HealthData data;
   final HealthService healthService;
@@ -23,7 +25,6 @@ class HealthCard extends StatelessWidget {
         color: Colors.transparent,
         child: GestureDetector(
           onTap: () async {
-            // 👉 Caso especial: Perfil
             if (data.titulo == 'Perfil') {
               final result = await Navigator.push(
                 context,
@@ -37,10 +38,21 @@ class HealthCard extends StatelessWidget {
                 onReturnFromDetail?.call();
               }
 
-              return; // 🔥 IMPORTANTE: evita que siga al DetailScreen
+              return;
+            }
+            if (data.titulo == 'Pasos') {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      PasosDetail(healthService: healthService, data: data),
+                ),
+              );
+
+              onReturnFromDetail?.call();
+              return;
             }
 
-            // 👉 Flujo normal para las demás tarjetas
             await Navigator.push(
               context,
               MaterialPageRoute(
