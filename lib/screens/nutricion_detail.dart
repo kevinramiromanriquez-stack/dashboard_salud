@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/health_service.dart';
 import '../models/metric_item.dart';
 
-class NutricionDetail extends StatelessWidget {
+class NutricionDetail extends StatefulWidget {
   final HealthService healthService;
   final HealthData data;
 
@@ -11,6 +11,103 @@ class NutricionDetail extends StatelessWidget {
     required this.healthService,
     required this.data,
   });
+
+  @override
+  State<NutricionDetail> createState() => _NutricionDetailState();
+}
+
+class _NutricionDetailState extends State<NutricionDetail> {
+  void mostrarDialogoAgregarAlimento() {
+    final caloriasController = TextEditingController();
+    final proteinasController = TextEditingController();
+    final carbsController = TextEditingController();
+    final grasasController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF12151C),
+          title: const Text(
+            'Agregar alimento',
+            style: TextStyle(color: Colors.white),
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _inputNumerico(
+                  controller: caloriasController,
+                  label: 'Calorías',
+                ),
+                const SizedBox(height: 12),
+                _inputNumerico(
+                  controller: proteinasController,
+                  label: 'Proteínas (g)',
+                ),
+                const SizedBox(height: 12),
+                _inputNumerico(controller: carbsController, label: 'Carbs (g)'),
+                const SizedBox(height: 12),
+                _inputNumerico(
+                  controller: grasasController,
+                  label: 'Grasas (g)',
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final calorias = int.tryParse(caloriasController.text) ?? 0;
+                final proteinas = int.tryParse(proteinasController.text) ?? 0;
+                final carbs = int.tryParse(carbsController.text) ?? 0;
+                final grasas = int.tryParse(grasasController.text) ?? 0;
+
+                setState(() {
+                  widget.healthService.agregarAlimento(
+                    calorias: calorias,
+                    proteinas: proteinas,
+                    carbs: carbs,
+                    grasas: grasas,
+                  );
+                });
+
+                Navigator.pop(context);
+              },
+              child: const Text('Guardar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _inputNumerico({
+    required TextEditingController controller,
+    required String label,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: TextInputType.number,
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.75)),
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.20)),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: const BorderSide(color: Colors.orange),
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +121,7 @@ class NutricionDetail extends StatelessWidget {
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
           child: Hero(
-            tag: data.tag,
+            tag: widget.data.tag,
             child: Material(
               color: Colors.transparent,
               child: Container(
@@ -67,16 +164,19 @@ class NutricionDetail extends StatelessWidget {
                           ),
                         ),
                         const Spacer(),
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white.withValues(alpha: 0.08),
-                          ),
-                          child: const Icon(
-                            Icons.edit_outlined,
-                            size: 20,
-                            color: Colors.white,
+                        GestureDetector(
+                          onTap: mostrarDialogoAgregarAlimento,
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white.withValues(alpha: 0.08),
+                            ),
+                            child: const Icon(
+                              Icons.edit_outlined,
+                              size: 20,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ],
@@ -85,7 +185,7 @@ class NutricionDetail extends StatelessWidget {
                     const SizedBox(height: 28),
 
                     Text(
-                      '${healthService.caloriasConsumidas} / ${healthService.metaCalorias}',
+                      '${widget.healthService.caloriasConsumidas} / ${widget.healthService.metaCalorias}',
                       style: const TextStyle(
                         fontSize: 34,
                         fontWeight: FontWeight.bold,
@@ -140,9 +240,9 @@ class NutricionDetail extends StatelessWidget {
                           width: 210,
                           child: _macroCard(
                             titulo: 'Proteínas',
-                            valor: healthService.proteinasConsumidas,
-                            meta: healthService.metaProteinas,
-                            progreso: healthService.progresoProteinas,
+                            valor: widget.healthService.proteinasConsumidas,
+                            meta: widget.healthService.metaProteinas,
+                            progreso: widget.healthService.progresoProteinas,
                             color: const Color(0xFFF5C542),
                           ),
                         ),
@@ -150,9 +250,9 @@ class NutricionDetail extends StatelessWidget {
                           width: 210,
                           child: _macroCard(
                             titulo: 'Carbs',
-                            valor: healthService.carbsConsumidos,
-                            meta: healthService.metaCarbs,
-                            progreso: healthService.progresoCarbs,
+                            valor: widget.healthService.carbsConsumidos,
+                            meta: widget.healthService.metaCarbs,
+                            progreso: widget.healthService.progresoCarbs,
                             color: const Color(0xFFFFB84D),
                           ),
                         ),
@@ -160,9 +260,9 @@ class NutricionDetail extends StatelessWidget {
                           width: 210,
                           child: _macroCard(
                             titulo: 'Grasas',
-                            valor: healthService.grasasConsumidas,
-                            meta: healthService.metaGrasas,
-                            progreso: healthService.progresoGrasas,
+                            valor: widget.healthService.grasasConsumidas,
+                            meta: widget.healthService.metaGrasas,
+                            progreso: widget.healthService.progresoGrasas,
                             color: const Color(0xFF60D97B),
                           ),
                         ),
@@ -179,10 +279,11 @@ class NutricionDetail extends StatelessWidget {
   }
 
   Widget _buildCaloriesBar() {
-    final progreso = healthService.progresoCalorias.clamp(0.0, 1.0);
+    final progreso = widget.healthService.progresoCalorias.clamp(0.0, 1.0);
     final bool metaCumplida =
-        healthService.caloriasConsumidas >= _caloriasMinimasEstimadas() &&
-        healthService.caloriasConsumidas <= _caloriasMaximasEstimadas();
+        widget.healthService.caloriasConsumidas >=
+            _caloriasMinimasEstimadas() &&
+        widget.healthService.caloriasConsumidas <= _caloriasMaximasEstimadas();
 
     return Column(
       children: [
@@ -234,6 +335,7 @@ class NutricionDetail extends StatelessWidget {
   }) {
     final progresoSeguro = progreso.clamp(0.0, 1.0);
     final bool excedido = valor > meta;
+    final bool metaCumplida = valor >= meta;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -258,7 +360,11 @@ class NutricionDetail extends StatelessWidget {
             minHeight: 8,
             backgroundColor: Colors.white.withValues(alpha: 0.10),
             valueColor: AlwaysStoppedAnimation<Color>(
-              excedido ? Colors.redAccent : color,
+              excedido
+                  ? Colors.redAccent
+                  : metaCumplida
+                  ? const Color(0xFF60D97B)
+                  : color,
             ),
           ),
         ),
@@ -267,10 +373,10 @@ class NutricionDetail extends StatelessWidget {
   }
 
   int _caloriasMinimasEstimadas() {
-    return (healthService.metaCalorias * 0.90).round();
+    return (widget.healthService.metaCalorias * 0.90).round();
   }
 
   int _caloriasMaximasEstimadas() {
-    return (healthService.metaCalorias * 1.10).round();
+    return (widget.healthService.metaCalorias * 1.10).round();
   }
 }
