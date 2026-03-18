@@ -53,9 +53,7 @@ class HealthCard extends StatelessWidget {
                   color: data.color.withValues(alpha: 0.08),
                 ),
               ],
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.08),
-              ),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -63,11 +61,7 @@ class HealthCard extends StatelessWidget {
                 CircleAvatar(
                   radius: 24,
                   backgroundColor: Colors.white.withValues(alpha: 0.12),
-                  child: Icon(
-                    data.icono,
-                    size: 26,
-                    color: Colors.white,
-                  ),
+                  child: Icon(data.icono, size: 26, color: Colors.white),
                 ),
                 const Spacer(),
                 Text(
@@ -81,8 +75,8 @@ class HealthCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   data.valor,
-                  style: const TextStyle(
-                    fontSize: 26,
+                  style: TextStyle(
+                    fontSize: data.titulo == 'Nutrición' ? 22 : 26,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 0.5,
                   ),
@@ -102,7 +96,7 @@ class HealthCard extends StatelessWidget {
                   Text(
                     data.subtitulo!,
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: data.titulo == 'Nutrición' ? 10 : 11,
                       color: Colors.white.withValues(alpha: 0.58),
                     ),
                   ),

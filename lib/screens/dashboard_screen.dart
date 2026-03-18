@@ -32,12 +32,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       HealthData(
         titulo: 'Nutrición',
         valor:
-            '${healthService.caloriasConsumidas} / ${healthService.metaCalorias}',
+            '${healthService.caloriasConsumidas}/${healthService.metaCalorias}',
         unidad: 'kcal',
         icono: Icons.restaurant_menu_outlined,
         color: const Color(0xFFFFB74D),
         subtitulo:
-            'P ${healthService.proteinasConsumidas}g • C ${healthService.carbsConsumidos}g • G ${healthService.grasasConsumidas}g',
+            '${healthService.proteinasConsumidas}P • ${healthService.carbsConsumidos}C • ${healthService.grasasConsumidas}G',
         progreso: healthService.progresoCalorias,
         tag: 'nutricion_card',
       ),

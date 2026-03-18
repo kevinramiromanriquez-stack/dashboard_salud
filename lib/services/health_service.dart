@@ -70,6 +70,24 @@ class HealthService {
     aguaMl -= cantidad;
     if (aguaMl < 0) aguaMl = 0;
   }
+  void agregarAlimento({
+  required int calorias,
+  required int proteinas,
+  required int carbs,
+  required int grasas,
+}) {
+  caloriasConsumidas += calorias;
+  proteinasConsumidas += proteinas;
+  carbsConsumidos += carbs;
+  grasasConsumidas += grasas;
+}
+
+void reiniciarNutricion() {
+  caloriasConsumidas = 0;
+  proteinasConsumidas = 0;
+  carbsConsumidos = 0;
+  grasasConsumidas = 0;
+}
 
   String obtenerEstadoIMC() {
     if (imc < 18.5) return 'Bajo peso';
