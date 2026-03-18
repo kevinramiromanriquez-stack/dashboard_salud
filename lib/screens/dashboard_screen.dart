@@ -12,6 +12,16 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   final HealthService healthService = HealthService();
+  Future<void> cargarPasosReales() async {
+    await healthService.sincronizarPasosReales();
+    setState(() {});
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    cargarPasosReales();
+  }
 
   Color obtenerColorProgreso(double progreso) {
     if (progreso < 0.5) return const Color(0xFF22C55E);
@@ -82,10 +92,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         actions: [
           IconButton(
-            onPressed: () {
-              setState(() {
-                healthService.actualizarDatos();
-              });
+            onPressed: () async {
+              await cargarPasosReales();
             },
             icon: const Icon(Icons.refresh),
             tooltip: 'Actualizar',

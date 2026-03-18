@@ -1,4 +1,36 @@
+import 'package:health/health.dart';
+import 'package:flutter/material.dart';
 class HealthService {
+  final Health health = Health();
+
+  Future<int> obtenerPasosHoy() async {
+    final types = [HealthDataType.STEPS];
+    final permissions = [HealthDataAccess.READ];
+
+    final now = DateTime.now();
+    final inicioDia = DateTime(now.year, now.month, now.day);
+
+    final autorizado = await health.requestAuthorization(
+      types,
+      permissions: permissions,
+    );
+
+    if (!autorizado) {
+      return 0;
+    }
+
+    try {
+      final pasosTotales = await health.getTotalStepsInInterval(inicioDia, now);
+      return pasosTotales ?? 0;
+    } catch (e) {
+      debugPrint('Error leyendo pasos de Health Connect: $e');
+      return 0;
+    }
+  }
+  Future<void> sincronizarPasosReales() async {
+  pasos = await obtenerPasosHoy();
+}
+
   double peso = 78.4;
   double altura = 1.80;
   int edad = 25;
@@ -16,9 +48,9 @@ class HealthService {
   int grasasConsumidas = 0;
   int metaGrasas = 65;
 
-  int pasos = 5057;
+  int pasos = 0;
 
-  int aguaMl = 1250;
+  int aguaMl = 0;
 
   final int metaAguaMl = 2000;
 
@@ -50,21 +82,18 @@ class HealthService {
     return progreso > 1 ? 1 : progreso;
   }
 
-  int get vasosTomados => (aguaMl / 250).floor();
+  int get vasosTomados {
+  int vasos = (aguaMl / 250).floor();
+  return vasos > 8 ? 8 : vasos;
+}
   String get resumenVasos => '$vasosTomados/8 vasos';
   String get porcentajeAgua =>
       '${(progresoAgua * 100).toStringAsFixed(0)}% hidratación';
 
 void actualizarDatos() {
-  pasos += 320;
   if (aguaMl < metaAguaMl) {
     aguaMl += 250;
     if (aguaMl > metaAguaMl) aguaMl = metaAguaMl;
-  }
-
-  final hora = DateTime.now().hour;
-  if (hora >= 0 && hora < pasosPorHora.length) {
-    pasosPorHora[hora] += 320;
   }
 }
 
