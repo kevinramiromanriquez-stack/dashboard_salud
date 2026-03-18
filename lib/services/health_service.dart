@@ -19,7 +19,9 @@ class HealthService {
   int pasos = 5057;
 
   int aguaMl = 1250;
+
   final int metaAguaMl = 2000;
+
   final int metaPasos = 6000;
 
   double get imc => peso / (altura * altura);
@@ -60,6 +62,15 @@ class HealthService {
       if (aguaMl > metaAguaMl) aguaMl = metaAguaMl;
     }
   }
+  void actualizarPerfil({
+  required int edad,
+  required double peso,
+  required double altura,
+}) {
+  this.edad = edad;
+  this.peso = peso;
+  this.altura = altura;
+}
 
   void agregarAgua(int cantidad) {
     aguaMl += cantidad;

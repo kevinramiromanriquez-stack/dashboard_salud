@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/metric_item.dart';
 import '../screens/detail_screen.dart';
 import '../services/health_service.dart';
-
+import '../screens/perfil_detail.dart';
 class HealthCard extends StatelessWidget {
   final HealthData data;
   final HealthService healthService;
@@ -23,6 +23,24 @@ class HealthCard extends StatelessWidget {
         color: Colors.transparent,
         child: GestureDetector(
           onTap: () async {
+            // 👉 Caso especial: Perfil
+            if (data.titulo == 'Perfil') {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      PerfilDetail(healthService: healthService, data: data),
+                ),
+              );
+
+              if (result == true) {
+                onReturnFromDetail?.call();
+              }
+
+              return; // 🔥 IMPORTANTE: evita que siga al DetailScreen
+            }
+
+            // 👉 Flujo normal para las demás tarjetas
             await Navigator.push(
               context,
               MaterialPageRoute(
@@ -31,9 +49,7 @@ class HealthCard extends StatelessWidget {
               ),
             );
 
-            if (onReturnFromDetail != null) {
-              onReturnFromDetail!();
-            }
+            onReturnFromDetail?.call();
           },
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 280),
