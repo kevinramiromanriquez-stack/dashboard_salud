@@ -1,15 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Permisos para leer pasos -->
+    <!-- Permisos -->
     <uses-permission android:name="android.permission.health.READ_STEPS" />
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
 
     <application
-        android:label="dashboard_salud"
         android:name="${applicationName}"
+        android:label="dashboard_salud"
         android:icon="@mipmap/ic_launcher">
 
-        <!-- Meta-data para cliente de Health Connect -->
         <meta-data
             android:name="com.google.android.health.connect.client.version"
             android:value="1" />
@@ -28,7 +27,6 @@
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme" />
 
-            <!-- Health Connect: pantalla de rationale/permisos -->
             <intent-filter>
                 <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
             </intent-filter>
@@ -39,19 +37,33 @@
             </intent-filter>
         </activity>
 
+        <!-- Alias requerido para Health permissions -->
+        <activity-alias
+            android:name="ViewPermissionUsageActivity"
+            android:exported="true"
+            android:targetActivity=".MainActivity"
+            android:permission="android.permission.START_VIEW_PERMISSION_USAGE">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+                <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
+            </intent-filter>
+        </activity-alias>
+
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
 
     <queries>
-        <!-- Tu query actual -->
+        <package android:name="com.google.android.apps.healthdata" />
+
+        <intent>
+            <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
+        </intent>
+
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT" />
             <data android:mimeType="text/plain" />
         </intent>
-
-        <!-- Health Connect -->
-        <package android:name="com.google.android.apps.healthdata" />
     </queries>
 </manifest>

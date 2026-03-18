@@ -1,35 +1,16 @@
-import 'package:health/health.dart';
 import 'package:flutter/material.dart';
+import 'package:health/health.dart';
+import 'package:permission_handler/permission_handler.dart';
+
 class HealthService {
   final Health health = Health();
+  bool _configurado = false;
 
-  Future<int> obtenerPasosHoy() async {
-    final types = [HealthDataType.STEPS];
-    final permissions = [HealthDataAccess.READ];
-
-    final now = DateTime.now();
-    final inicioDia = DateTime(now.year, now.month, now.day);
-
-    final autorizado = await health.requestAuthorization(
-      types,
-      permissions: permissions,
-    );
-
-    if (!autorizado) {
-      return 0;
-    }
-
-    try {
-      final pasosTotales = await health.getTotalStepsInInterval(inicioDia, now);
-      return pasosTotales ?? 0;
-    } catch (e) {
-      debugPrint('Error leyendo pasos de Health Connect: $e');
-      return 0;
-    }
+  Future<void> _asegurarConfiguracion() async {
+    if (_configurado) return;
+    await health.configure();
+    _configurado = true;
   }
-  Future<void> sincronizarPasosReales() async {
-  pasos = await obtenerPasosHoy();
-}
 
   double peso = 78.4;
   double altura = 1.80;
@@ -49,53 +30,135 @@ class HealthService {
   int metaGrasas = 65;
 
   int pasos = 0;
-
   int aguaMl = 0;
 
   final int metaAguaMl = 2000;
-
   final int metaPasos = 6000;
+
+  List<int> pasosPorHora = [
+    0,
+    0,
+    0,
+    0,
+    20,
+    0,
+    40,
+    120,
+    280,
+    350,
+    410,
+    300,
+    260,
+    180,
+    90,
+    70,
+    130,
+    220,
+    540,
+    620,
+    430,
+    300,
+    120,
+    80,
+  ];
+
+  Future<int> obtenerPasosHoy() async {
+    await _asegurarConfiguracion();
+    final permisoActividad = await Permission.activityRecognition.request();
+
+    if (!permisoActividad.isGranted) {
+      debugPrint('Permiso de actividad no concedido');
+      return 0;
+    }
+
+    final types = [HealthDataType.STEPS];
+    final permissions = [HealthDataAccess.READ];
+
+    final now = DateTime.now();
+    final inicioDia = DateTime(now.year, now.month, now.day);
+
+    try {
+      final autorizado = await health.requestAuthorization(
+        types,
+        permissions: permissions,
+      );
+
+      debugPrint('Autorizado Health Connect: $autorizado');
+
+      if (!autorizado) {
+        return 0;
+      }
+
+      final pasosTotales = await health.getTotalStepsInInterval(inicioDia, now);
+      debugPrint('Pasos obtenidos: $pasosTotales');
+
+      return pasosTotales ?? 0;
+    } catch (e) {
+      debugPrint('Error leyendo pasos: $e');
+      return 0;
+    }
+  }
+
+  Future<void> sincronizarPasosReales() async {
+    pasos = await obtenerPasosHoy();
+  }
 
   double get imc => peso / (altura * altura);
 
-  double get progresoCalorias => caloriasConsumidas / metaCalorias > 1
-      ? 1
-      : caloriasConsumidas / metaCalorias;
+  double get progresoCalorias {
+    final progreso = caloriasConsumidas / metaCalorias;
+    return progreso > 1 ? 1 : progreso;
+  }
 
-  double get progresoProteinas => proteinasConsumidas / metaProteinas > 1
-      ? 1
-      : proteinasConsumidas / metaProteinas;
+  double get progresoProteinas {
+    final progreso = proteinasConsumidas / metaProteinas;
+    return progreso > 1 ? 1 : progreso;
+  }
 
-  double get progresoCarbs =>
-      carbsConsumidos / metaCarbs > 1 ? 1 : carbsConsumidos / metaCarbs;
+  double get progresoCarbs {
+    final progreso = carbsConsumidos / metaCarbs;
+    return progreso > 1 ? 1 : progreso;
+  }
 
-  double get progresoGrasas =>
-      grasasConsumidas / metaGrasas > 1 ? 1 : grasasConsumidas / metaGrasas;
+  double get progresoGrasas {
+    final progreso = grasasConsumidas / metaGrasas;
+    return progreso > 1 ? 1 : progreso;
+  }
 
   double get progresoPasos {
-    double progreso = pasos / metaPasos;
+    final progreso = pasos / metaPasos;
     return progreso > 1 ? 1 : progreso;
   }
 
   double get progresoAgua {
-    double progreso = aguaMl / metaAguaMl;
+    final progreso = aguaMl / metaAguaMl;
     return progreso > 1 ? 1 : progreso;
   }
 
   int get vasosTomados {
-  int vasos = (aguaMl / 250).floor();
-  return vasos > 8 ? 8 : vasos;
-}
+    final vasos = (aguaMl / 250).floor();
+    return vasos > 8 ? 8 : vasos;
+  }
+
   String get resumenVasos => '$vasosTomados/8 vasos';
+
   String get porcentajeAgua =>
       '${(progresoAgua * 100).toStringAsFixed(0)}% hidratación';
 
-void actualizarDatos() {
-  if (aguaMl < metaAguaMl) {
-    aguaMl += 250;
-    if (aguaMl > metaAguaMl) aguaMl = metaAguaMl;
+  double get distanciaKm => pasos * 0.00075;
+
+  int get caloriasPasos => (pasos * 0.04).round();
+
+  int get pisosSubidos => (pasos / 2500).floor();
+
+  void actualizarDatos() {
+    if (aguaMl < metaAguaMl) {
+      aguaMl += 250;
+      if (aguaMl > metaAguaMl) {
+        aguaMl = metaAguaMl;
+      }
+    }
   }
-}
 
   void actualizarPerfil({
     required int edad,
@@ -109,12 +172,16 @@ void actualizarDatos() {
 
   void agregarAgua(int cantidad) {
     aguaMl += cantidad;
-    if (aguaMl > metaAguaMl) aguaMl = metaAguaMl;
+    if (aguaMl > metaAguaMl) {
+      aguaMl = metaAguaMl;
+    }
   }
 
   void quitarAgua(int cantidad) {
     aguaMl -= cantidad;
-    if (aguaMl < 0) aguaMl = 0;
+    if (aguaMl < 0) {
+      aguaMl = 0;
+    }
   }
 
   void agregarAlimento({
@@ -146,37 +213,4 @@ void actualizarDatos() {
   String obtenerSubtituloAgua() {
     return '$aguaMl / $metaAguaMl ml';
   }
-
-  List<int> pasosPorHora = [
-    0,
-    0,
-    0,
-    0,
-    20,
-    0,
-    40,
-    120,
-    280,
-    350,
-    410,
-    300,
-    260,
-    180,
-    90,
-    70,
-    130,
-    220,
-    540,
-    620,
-    430,
-    300,
-    120,
-    80,
-  ];
-
-  double get distanciaKm => pasos * 0.00075;
-
-  int get caloriasPasos => (pasos * 0.04).round();
-
-  int get pisosSubidos => (pasos / 2500).floor();
 }
